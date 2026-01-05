@@ -2,7 +2,31 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Task Spinner - Color Sync</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Task Orbit | Spin Your Productivity</title>
+    <meta name="title" content="Task Orbit | Spin Your Productivity" />
+    <meta
+      name="description"
+      content="A powerful task management wheel with integrated timers and batch import."
+    />
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎡</text></svg>"
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Task Orbit" />
+    <meta
+      property="og:description"
+      content="Decide your next task with a spin."
+    />
+    <meta
+      property="og:image"
+      content="https://picsum.photos/seed/taskorbit/1200/630"
+    />
+
     <style>
       :root {
         --primary: #6366f1;
@@ -13,7 +37,7 @@
         --success: #10b981;
       }
       body {
-        font-family: "Inter", sans-serif;
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
         background: #f1f5f9;
         display: flex;
         justify-content: center;
@@ -31,7 +55,28 @@
         width: 100%;
       }
 
-      /* Left Column */
+      /* Branding */
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .brand-icon {
+        width: 32px;
+        height: 32px;
+        background: conic-gradient(#ff6b6b, #4ecdc4, #ffe66d, #1a535c);
+        border-radius: 50%;
+        border: 2px solid var(--dark);
+      }
+      .brand h2 {
+        margin: 0;
+        color: var(--dark);
+        font-size: 1.4rem;
+        font-weight: 800;
+      }
+
+      /* Left Column Controls */
       .controls {
         flex: 1;
         display: flex;
@@ -40,7 +85,6 @@
         padding-right: 30px;
         min-width: 320px;
       }
-
       #input-state,
       #list-state {
         display: none;
@@ -51,30 +95,25 @@
         display: flex;
       }
 
-      /* Buttons at the Top */
-      .top-nav {
-        margin-bottom: 15px;
-      }
-
       textarea {
         width: 100%;
         height: 350px;
         padding: 12px;
         border: 1.5px solid var(--border);
-        border-radius: 10px;
-        font-family: monospace;
+        border-radius: 12px;
+        font-family: "Courier New", monospace;
         font-size: 0.85rem;
         resize: none;
         box-sizing: border-box;
+        background: var(--light);
       }
 
-      /* Task List UI with Color Sync */
+      /* Task List with Sync Colors */
       .task-list-display {
         max-height: 400px;
         overflow-y: auto;
         margin-bottom: 15px;
-        border-radius: 10px;
-        background: var(--light);
+        border-radius: 12px;
         padding: 5px;
       }
       .list-item {
@@ -87,7 +126,7 @@
         margin-bottom: 6px;
         font-size: 0.85rem;
         border: 1px solid #eee;
-        border-left-width: 6px; /* Space for the synced color */
+        border-left-width: 6px;
       }
       .del-x {
         color: #94a3b8;
@@ -95,11 +134,7 @@
         cursor: pointer;
         border: none;
         background: none;
-        font-size: 1.1rem;
-        padding: 0 5px;
-      }
-      .del-x:hover {
-        color: var(--secondary);
+        font-size: 1.2rem;
       }
 
       .action-btn {
@@ -108,16 +143,17 @@
         border: none;
         border-radius: 10px;
         cursor: pointer;
-        font-weight: 600;
+        font-weight: 700;
         transition: 0.2s;
       }
       .btn-dark {
         background: var(--dark);
         color: white;
+        margin-bottom: 10px;
       }
       .btn-outline {
-        background: #f1f5f9;
-        border: 1px solid var(--border);
+        background: white;
+        border: 2px solid var(--dark);
         color: var(--dark);
         margin-bottom: 15px;
       }
@@ -127,16 +163,17 @@
         display: none;
         font-size: 1rem;
         margin-top: 10px;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
       }
 
-      /* Right Column */
+      /* Right Column Wheel */
       .wheel-box {
         flex: 1.5;
         text-align: center;
       }
       #current-task-name {
-        font-size: 1.5rem;
-        font-weight: 700;
+        font-size: 1.6rem;
+        font-weight: 800;
         color: var(--primary);
         height: 1.5em;
         margin-bottom: 10px;
@@ -161,6 +198,7 @@
         border: 8px solid var(--dark);
         border-radius: 50%;
         background: white;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
       }
 
       #spin-btn {
@@ -174,47 +212,50 @@
         font-weight: 800;
         font-size: 1.2rem;
         cursor: pointer;
+        box-shadow: 0 10px 20px rgba(244, 63, 94, 0.2);
+        transition: transform 0.1s;
+      }
+      #spin-btn:active {
+        transform: scale(0.96);
       }
       #timer-display {
-        font-size: 5rem;
+        font-size: 5.5rem;
         font-weight: 900;
         color: var(--dark);
-        margin: 15px 0;
+        margin: 10px 0;
         font-variant-numeric: tabular-nums;
+        letter-spacing: -2px;
       }
 
       .settings-bar {
         margin-top: auto;
         padding: 12px;
         background: var(--light);
-        border-radius: 10px;
+        border-radius: 12px;
         font-size: 0.8rem;
+        border: 1px dashed #cbd5e1;
       }
     </style>
   </head>
   <body>
     <div class="app-container">
       <div class="controls">
-        <h3>Task Manager</h3>
+        <div class="brand">
+          <div class="brand-icon"></div>
+          <h2>Task Orbit</h2>
+        </div>
 
         <div id="input-state" class="active">
-          <div class="top-nav">
-            <button class="action-btn btn-dark" onclick="importAndSwitch()">
-              Update Wheel & Manage
-            </button>
-          </div>
-          <textarea
-            id="batchInput"
-            placeholder="Task A	10	O&#10;Task B	20	X"
-          ></textarea>
+          <button class="action-btn btn-dark" onclick="importAndSwitch()">
+            Update Wheel & Manage
+          </button>
+          <textarea id="batchInput" placeholder="Task Name	25	O"></textarea>
         </div>
 
         <div id="list-state">
-          <div class="top-nav">
-            <button class="action-btn btn-outline" onclick="showInputState()">
-              ← Back to Edit List
-            </button>
-          </div>
+          <button class="action-btn btn-outline" onclick="showInputState()">
+            ← Edit List
+          </button>
           <div id="taskListView" class="task-list-display"></div>
         </div>
 
@@ -223,22 +264,23 @@
           class="action-btn btn-repeat"
           onclick="repeatCurrentTask()"
         >
-          Continue Task (Repeat)
+          Repeat Same Task
         </button>
 
         <div class="settings-bar">
-          <strong>Custom Alert:</strong>
+          <strong>Upload Alarm:</strong><br />
           <input
             type="file"
             id="audioUpload"
             accept="audio/*"
             onchange="loadCustomAudio(event)"
+            style="margin-top: 5px; font-size: 0.75rem"
           />
         </div>
       </div>
 
       <div class="wheel-box">
-        <div id="current-task-name">Ready?</div>
+        <div id="current-task-name">Welcome</div>
         <div id="wheel-wrapper">
           <div class="pointer"></div>
           <canvas id="wheel" width="400" height="400"></canvas>
@@ -286,7 +328,7 @@
 
       function importAndSwitch() {
         const text = document.getElementById("batchInput").value.trim();
-        if (!text) return alert("Please enter tasks!");
+        if (!text) return alert("Enter your tasks first!");
 
         const lines = text.split("\n");
         tasks = [];
@@ -318,12 +360,10 @@
         container.innerHTML = tasks
           .map((t, i) => {
             const itemColor = colors[i % colors.length];
-            return `
-                <div class="list-item" style="border-left-color: ${itemColor}">
-                    <span><strong>${t.name}</strong> (${t.time}m)</span>
-                    <button class="del-x" onclick="removeTask(${i})">✕</button>
-                </div>
-            `;
+            return `<div class="list-item" style="border-left-color: ${itemColor}">
+                <span><strong>${t.name}</strong> (${t.time}m)</span>
+                <button class="del-x" onclick="removeTask(${i})">✕</button>
+            </div>`;
           })
           .join("");
       }
@@ -368,7 +408,7 @@
       }
 
       function spinWheel() {
-        if (tasks.length === 0) return alert("Task list is empty!");
+        if (tasks.length === 0) return;
         stopAudio();
         clearInterval(countdownInterval);
         document.getElementById("repeatBtn").style.display = "none";
@@ -426,7 +466,7 @@
             }
             if (currentActiveTask.repeatable)
               document.getElementById("repeatBtn").style.display = "block";
-            alert("Time is up!");
+            alert("Task Complete!");
           }
         }, 1000);
       }
