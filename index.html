@@ -452,14 +452,13 @@
       function startTimer(seconds) {
         clearInterval(countdownInterval);
         const display = document.getElementById("timer-display");
-        countdownInterval = setInterval(() => {
-          let m = Math.floor(seconds / 60);
-          let s = seconds % 60;
-          display.textContent = `${m.toString().padStart(2, "0")}:${s
-            .toString()
-            .padStart(2, "0")}`;
-          if (seconds-- <= 0) {
+        const endTime = Date.now() + seconds * 1000;
+
+        function tick() {
+          const remaining = Math.ceil((endTime - Date.now()) / 1000);
+          if (remaining <= 0) {
             clearInterval(countdownInterval);
+            display.textContent = "00:00";
             if (customAudioBlob) {
               currentAudio = new Audio(customAudioBlob);
               currentAudio.play();
@@ -467,8 +466,17 @@
             if (currentActiveTask.repeatable)
               document.getElementById("repeatBtn").style.display = "block";
             alert("Task Complete!");
+            return;
           }
-        }, 1000);
+          let m = Math.floor(remaining / 60);
+          let s = remaining % 60;
+          display.textContent = `${m.toString().padStart(2, "0")}:${s
+            .toString()
+            .padStart(2, "0")}`;
+        }
+
+        tick();
+        countdownInterval = setInterval(tick, 500);
       }
 
       function easeOut(t, b, c, d) {
