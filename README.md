@@ -8,28 +8,14 @@ Open `index.html` in any modern browser — no install or server required.
 
 ## Adding Tasks
 
-Tasks are entered as plain text in the left panel, one per line, with three fields separated by a **tab** or two or more spaces:
+Use the form in the left panel to add tasks one at a time:
 
-```
-Task Name    <minutes>    <O or X>
-```
+1. Enter a **task name**.
+2. Enter the **duration in minutes**.
+3. Check **Repeatable** if you want a "Repeat Same Task" button to appear after the timer ends.
+4. Click **+ Add Task** (or press Enter) — the task appears in the list and the wheel updates instantly.
 
-| Field | Description |
-|-------|-------------|
-| Task Name | Label shown on the wheel and above the timer |
-| Minutes | How long the task runs (integer) |
-| O / X | `O` = repeatable (shows a "Repeat Same Task" button after completion); `X` = one-off |
-
-**Example:**
-
-```
-Deep Work	50	X
-Email	10	O
-Exercise	30	O
-Reading	25	X
-```
-
-Click **Update Wheel & Manage** to load the tasks onto the wheel. Your list is automatically saved in `localStorage` and restored on next visit.
+Tasks are saved automatically in `localStorage` and restored on your next visit.
 
 ## Spinning the Wheel
 
@@ -51,7 +37,6 @@ In the **Upload Alarm** section at the bottom-left, choose any audio file from y
 
 ## Managing the Task List
 
-After loading tasks, the left panel switches to list view where you can:
-- See all tasks with their color-coded wheel segments.
-- Click **✕** to remove a task (the wheel updates immediately).
-- Click **← Edit List** to go back and edit the raw text.
+The task list is always visible below the add form:
+- Each task shows its color-coded stripe matching its wheel segment.
+- Click **✕** next to any task to remove it — the wheel updates immediately.
