@@ -36,13 +36,15 @@
         --border: #e2e8f0;
         --success: #10b981;
       }
+      * { box-sizing: border-box; }
       body {
         font-family: "Inter", system-ui, -apple-system, sans-serif;
         background: #f1f5f9;
         display: flex;
         justify-content: center;
-        padding: 20px;
+        padding: 24px 16px;
         color: var(--dark);
+        min-height: 100vh;
       }
       .app-container {
         display: flex;
@@ -53,6 +55,7 @@
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
         max-width: 1100px;
         width: 100%;
+        align-items: flex-start;
       }
 
       /* Branding */
@@ -68,6 +71,7 @@
         background: conic-gradient(#ff6b6b, #4ecdc4, #ffe66d, #1a535c);
         border-radius: 50%;
         border: 2px solid var(--dark);
+        flex-shrink: 0;
       }
       .brand h2 {
         margin: 0;
@@ -81,16 +85,31 @@
         flex: 1;
         display: flex;
         flex-direction: column;
+        gap: 0;
         border-right: 1px solid var(--border);
         padding-right: 30px;
-        min-width: 320px;
+        min-width: 300px;
+        max-width: 360px;
       }
+
+      /* Section label */
+      .section-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        margin-top: 16px;
+      }
+      .section-label:first-of-type { margin-top: 0; }
+
       /* Add-task form */
       .add-form {
         display: flex;
         flex-direction: column;
         gap: 8px;
-        margin-bottom: 14px;
+        margin-bottom: 4px;
       }
       .add-form input[type="text"],
       .add-form input[type="number"] {
@@ -99,7 +118,6 @@
         border: 1.5px solid var(--border);
         border-radius: 10px;
         font-size: 0.9rem;
-        box-sizing: border-box;
         background: var(--light);
         outline: none;
         transition: border-color 0.15s;
@@ -129,15 +147,48 @@
         height: 15px;
         cursor: pointer;
         accent-color: var(--primary);
+        flex-shrink: 0;
       }
 
-      /* Task List with Sync Colors */
+      /* Batch import */
+      .batch-area {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 4px;
+      }
+      .batch-area textarea {
+        width: 100%;
+        height: 72px;
+        padding: 8px 10px;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-family: inherit;
+        background: var(--light);
+        outline: none;
+        resize: vertical;
+        transition: border-color 0.15s;
+        color: var(--dark);
+      }
+      .batch-area textarea:focus { border-color: var(--primary); }
+      .batch-area textarea::placeholder { color: #94a3b8; }
+
+      /* Task List */
       .task-list-display {
-        max-height: 400px;
+        max-height: 280px;
         overflow-y: auto;
-        margin-bottom: 15px;
         border-radius: 12px;
-        padding: 5px;
+        padding: 2px;
+        margin-bottom: 4px;
+      }
+      .task-list-display:empty::after {
+        content: "No tasks yet";
+        display: block;
+        text-align: center;
+        color: #cbd5e1;
+        font-size: 0.82rem;
+        padding: 16px 0;
       }
       .list-item {
         display: flex;
@@ -146,60 +197,87 @@
         padding: 10px 12px;
         background: white;
         border-radius: 8px;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
         font-size: 0.85rem;
         border: 1px solid #eee;
-        border-left-width: 6px;
+        border-left-width: 5px;
+        transition: background 0.1s;
       }
+      .list-item:hover { background: #f8fafc; }
       .del-x {
-        color: #94a3b8;
+        color: #cbd5e1;
         font-weight: bold;
         cursor: pointer;
         border: none;
         background: none;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: color 0.15s;
+        flex-shrink: 0;
       }
+      .del-x:hover { color: var(--secondary); }
 
       .action-btn {
         width: 100%;
-        padding: 14px;
+        padding: 12px 14px;
         border: none;
         border-radius: 10px;
         cursor: pointer;
         font-weight: 700;
-        transition: 0.2s;
+        font-size: 0.9rem;
+        transition: opacity 0.15s, transform 0.1s;
       }
+      .action-btn:hover { opacity: 0.88; }
+      .action-btn:active { transform: scale(0.98); }
       .btn-dark {
         background: var(--dark);
         color: white;
-        margin-bottom: 10px;
       }
-      .btn-outline {
-        background: white;
-        border: 2px solid var(--dark);
-        color: var(--dark);
-        margin-bottom: 15px;
+      .btn-secondary {
+        background: var(--primary);
+        color: white;
       }
       .btn-repeat {
         background: var(--success);
         color: white;
         display: none;
-        font-size: 1rem;
-        margin-top: 10px;
         box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+      }
+
+      /* Alarm upload */
+      .settings-bar {
+        margin-top: 4px;
+        padding: 12px;
+        background: var(--light);
+        border-radius: 12px;
+        font-size: 0.8rem;
+        border: 1px dashed #cbd5e1;
+      }
+      .settings-bar label { font-weight: 600; }
+      .settings-bar input[type="file"] {
+        margin-top: 6px;
+        font-size: 0.75rem;
+        display: block;
+        width: 100%;
       }
 
       /* Right Column Wheel */
       .wheel-box {
         flex: 1.5;
-        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
       }
       #current-task-name {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
         font-weight: 800;
         color: var(--primary);
-        height: 1.5em;
-        margin-bottom: 10px;
+        min-height: 1.8em;
+        margin-bottom: 12px;
+        text-align: center;
+        word-break: break-word;
       }
       #wheel-wrapper {
         position: relative;
@@ -207,56 +285,110 @@
       }
       .pointer {
         position: absolute;
-        top: -15px;
+        top: -14px;
         left: 50%;
         transform: translateX(-50%);
         width: 0;
         height: 0;
-        border-left: 15px solid transparent;
-        border-right: 15px solid transparent;
-        border-top: 30px solid var(--dark);
+        border-left: 14px solid transparent;
+        border-right: 14px solid transparent;
+        border-top: 28px solid var(--dark);
         z-index: 10;
       }
       canvas {
         border: 8px solid var(--dark);
         border-radius: 50%;
         background: white;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        display: block;
       }
 
+      /* Timer block */
+      .timer-block {
+        margin-top: 20px;
+        width: 100%;
+        max-width: 360px;
+        text-align: center;
+      }
+      #timer-display {
+        font-size: 5rem;
+        font-weight: 900;
+        color: var(--dark);
+        margin: 0;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -2px;
+        line-height: 1;
+      }
+      /* Progress bar */
+      #timer-bar-wrap {
+        height: 6px;
+        background: var(--border);
+        border-radius: 99px;
+        margin: 10px 0 0;
+        overflow: hidden;
+      }
+      #timer-bar {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 99px;
+        width: 100%;
+        transition: width 0.5s linear, background 0.3s;
+      }
+
+      /* Buttons row at bottom of wheel-box */
+      .wheel-actions {
+        margin-top: 18px;
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        max-width: 360px;
+      }
       #spin-btn {
-        margin-top: 25px;
-        width: 80%;
-        padding: 18px;
+        flex: 1;
+        padding: 16px;
         background: var(--secondary);
         color: white;
         border: none;
         border-radius: 50px;
         font-weight: 800;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         cursor: pointer;
-        box-shadow: 0 10px 20px rgba(244, 63, 94, 0.2);
-        transition: transform 0.1s;
+        box-shadow: 0 8px 18px rgba(244, 63, 94, 0.25);
+        transition: transform 0.1s, opacity 0.15s;
       }
-      #spin-btn:active {
-        transform: scale(0.96);
-      }
-      #timer-display {
-        font-size: 5.5rem;
-        font-weight: 900;
+      #spin-btn:hover { opacity: 0.9; }
+      #spin-btn:active { transform: scale(0.96); }
+      #stop-btn {
+        padding: 16px 20px;
+        background: white;
         color: var(--dark);
-        margin: 10px 0;
-        font-variant-numeric: tabular-nums;
-        letter-spacing: -2px;
+        border: 2px solid var(--border);
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        display: none;
+        transition: border-color 0.15s, color 0.15s;
       }
+      #stop-btn:hover { border-color: var(--secondary); color: var(--secondary); }
 
-      .settings-bar {
-        margin-top: auto;
-        padding: 12px;
-        background: var(--light);
-        border-radius: 12px;
-        font-size: 0.8rem;
-        border: 1px dashed #cbd5e1;
+      /* Responsive */
+      @media (max-width: 720px) {
+        .app-container {
+          flex-direction: column;
+          padding: 20px 16px;
+          gap: 20px;
+        }
+        .controls {
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+          padding-right: 0;
+          padding-bottom: 20px;
+          max-width: 100%;
+          min-width: unset;
+        }
+        canvas { width: 300px !important; height: 300px !important; }
+        #timer-display { font-size: 3.8rem; }
       }
     </style>
   </head>
@@ -268,6 +400,7 @@
           <h2>Task Orbit</h2>
         </div>
 
+        <p class="section-label">Add Task</p>
         <div class="add-form">
           <input
             type="text"
@@ -288,29 +421,37 @@
               Repeatable
             </label>
           </div>
-          <button class="action-btn btn-dark" onclick="addTask()">
-            + Add Task
-          </button>
+          <button class="action-btn btn-dark" onclick="addTask()">+ Add Task</button>
         </div>
 
+        <p class="section-label">Batch Import</p>
+        <div class="batch-area">
+          <textarea
+            id="batchInput"
+            placeholder="Task name, minutes&#10;Read emails, 15&#10;Deep work, 45&#10;Exercise, 30"
+          ></textarea>
+          <button class="action-btn btn-secondary" onclick="batchImport()">Import All</button>
+        </div>
+
+        <p class="section-label">Task List</p>
         <div id="taskListView" class="task-list-display"></div>
 
         <button
           id="repeatBtn"
           class="action-btn btn-repeat"
           onclick="repeatCurrentTask()"
+          style="margin-bottom: 12px;"
         >
           Repeat Same Task
         </button>
 
         <div class="settings-bar">
-          <strong>Upload Alarm:</strong><br />
+          <label>Custom Alarm Sound</label>
           <input
             type="file"
             id="audioUpload"
             accept="audio/*"
             onchange="loadCustomAudio(event)"
-            style="margin-top: 5px; font-size: 0.75rem"
           />
         </div>
       </div>
@@ -321,8 +462,14 @@
           <div class="pointer"></div>
           <canvas id="wheel" width="400" height="400"></canvas>
         </div>
-        <button id="spin-btn" onclick="spinWheel()">SPIN THE WHEEL</button>
-        <div id="timer-display">00:00</div>
+        <div class="timer-block">
+          <div id="timer-display">00:00</div>
+          <div id="timer-bar-wrap"><div id="timer-bar"></div></div>
+        </div>
+        <div class="wheel-actions">
+          <button id="spin-btn" onclick="spinWheel()">SPIN THE WHEEL</button>
+          <button id="stop-btn" onclick="stopTimer()">STOP</button>
+        </div>
       </div>
     </div>
 
@@ -330,16 +477,8 @@
       const canvas = document.getElementById("wheel");
       const ctx = canvas.getContext("2d");
       const colors = [
-        "#6366f1",
-        "#f43f5e",
-        "#10b981",
-        "#f59e0b",
-        "#8b5cf6",
-        "#ec4899",
-        "#06b6d4",
-        "#2dd4bf",
-        "#fbbf24",
-        "#a855f7",
+        "#6366f1","#f43f5e","#10b981","#f59e0b","#8b5cf6",
+        "#ec4899","#06b6d4","#2dd4bf","#fbbf24","#a855f7",
       ];
 
       let tasks = [];
@@ -349,6 +488,7 @@
       let startAngle = 0;
       let arc = 0;
       let countdownInterval;
+      let timerTotal = 0;
 
       function loadCustomAudio(event) {
         const file = event.target.files[0];
@@ -360,6 +500,16 @@
           currentAudio.pause();
           currentAudio.currentTime = 0;
         }
+      }
+
+      function stopTimer() {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+        document.getElementById("timer-display").textContent = "00:00";
+        document.getElementById("timer-bar").style.width = "100%";
+        document.getElementById("timer-bar").style.background = "var(--primary)";
+        document.getElementById("stop-btn").style.display = "none";
+        stopAudio();
       }
 
       function addTask() {
@@ -374,7 +524,6 @@
         if (!time || time < 1) { minEl.focus(); return; }
 
         tasks.push({ name, time, repeatable: repEl.checked });
-
         nameEl.value = "";
         minEl.value = "";
         repEl.checked = false;
@@ -383,6 +532,28 @@
         renderTaskList();
         drawWheel();
         saveTasks();
+      }
+
+      function batchImport() {
+        const raw = document.getElementById("batchInput").value.trim();
+        if (!raw) return;
+        let added = 0;
+        raw.split("\n").forEach(line => {
+          const parts = line.split(",");
+          if (parts.length < 2) return;
+          const name = parts[0].trim();
+          const time = parseInt(parts[1].trim());
+          if (!name || !time || time < 1) return;
+          const repeatable = parts[2] ? parts[2].trim().toLowerCase() === "true" : false;
+          tasks.push({ name, time, repeatable });
+          added++;
+        });
+        if (added > 0) {
+          document.getElementById("batchInput").value = "";
+          renderTaskList();
+          drawWheel();
+          saveTasks();
+        }
       }
 
       function saveTasks() {
@@ -394,9 +565,11 @@
         container.innerHTML = tasks
           .map((t, i) => {
             const itemColor = colors[i % colors.length];
-            return `<div class="list-item" style="border-left-color: ${itemColor}">
-                <span><strong>${t.name}</strong> (${t.time}m)</span>
-                <button class="del-x" onclick="removeTask(${i})">✕</button>
+            const badge = t.repeatable
+              ? `<span style="font-size:0.7rem;color:#64748b;margin-left:4px">↺</span>` : "";
+            return `<div class="list-item" style="border-left-color:${itemColor}">
+              <span><strong>${t.name}</strong>${badge} <span style="color:#94a3b8">${t.time}m</span></span>
+              <button class="del-x" onclick="removeTask(${i})">✕</button>
             </div>`;
           })
           .join("");
@@ -441,7 +614,9 @@
         if (tasks.length === 0) return;
         stopAudio();
         clearInterval(countdownInterval);
+        countdownInterval = null;
         document.getElementById("repeatBtn").style.display = "none";
+        document.getElementById("stop-btn").style.display = "none";
 
         let spinAngleStart = Math.random() * 10 + 10;
         let spinTime = 0;
@@ -481,28 +656,43 @@
 
       function startTimer(seconds) {
         clearInterval(countdownInterval);
+        timerTotal = seconds;
         const display = document.getElementById("timer-display");
+        const bar = document.getElementById("timer-bar");
         const endTime = Date.now() + seconds * 1000;
+
+        bar.style.background = "var(--primary)";
+        document.getElementById("stop-btn").style.display = "block";
 
         function tick() {
           const remaining = Math.ceil((endTime - Date.now()) / 1000);
           if (remaining <= 0) {
             clearInterval(countdownInterval);
+            countdownInterval = null;
             display.textContent = "00:00";
+            bar.style.width = "0%";
+            bar.style.background = "var(--secondary)";
+            document.getElementById("stop-btn").style.display = "none";
+
             if (customAudioBlob) {
               currentAudio = new Audio(customAudioBlob);
               currentAudio.play();
             }
             if (currentActiveTask.repeatable)
               document.getElementById("repeatBtn").style.display = "block";
+
             alert("Task Complete!");
+            stopAudio(); // stop music after user clicks OK
             return;
           }
+          const pct = (remaining / timerTotal) * 100;
+          bar.style.width = pct + "%";
+          if (pct < 20) bar.style.background = "var(--secondary)";
+          else if (pct < 50) bar.style.background = "var(--primary)";
+
           let m = Math.floor(remaining / 60);
           let s = remaining % 60;
-          display.textContent = `${m.toString().padStart(2, "0")}:${s
-            .toString()
-            .padStart(2, "0")}`;
+          display.textContent = `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
         }
 
         tick();
