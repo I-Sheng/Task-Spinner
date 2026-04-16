@@ -150,6 +150,34 @@
         flex-shrink: 0;
       }
 
+      /* Collapsible sections */
+      .collapsible {
+        margin-bottom: 4px;
+      }
+      .collapsible > summary.section-label {
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+        margin-bottom: 0;
+        padding: 4px 0;
+      }
+      .collapsible > summary.section-label::after {
+        content: "▸";
+        font-size: 0.75rem;
+        color: #94a3b8;
+        transition: transform 0.2s;
+      }
+      .collapsible[open] > summary.section-label::after {
+        transform: rotate(90deg);
+      }
+      .collapsible > summary::-webkit-details-marker { display: none; }
+      .collapsible > *:not(summary) {
+        margin-top: 8px;
+      }
+
       /* Batch import */
       .batch-area {
         display: flex;
@@ -400,38 +428,42 @@
           <h2>Task Orbit</h2>
         </div>
 
-        <p class="section-label">Add Task</p>
-        <div class="add-form">
-          <input
-            type="text"
-            id="taskName"
-            placeholder="Task name"
-            onkeydown="if(event.key==='Enter') addTask()"
-          />
-          <div class="form-row">
+        <details class="collapsible" open>
+          <summary class="section-label">Add Task</summary>
+          <div class="add-form">
             <input
-              type="number"
-              id="taskMinutes"
-              placeholder="Minutes"
-              min="1"
+              type="text"
+              id="taskName"
+              placeholder="Task name"
               onkeydown="if(event.key==='Enter') addTask()"
             />
-            <label class="repeat-label">
-              <input type="checkbox" id="taskRepeatable" />
-              Repeatable
-            </label>
+            <div class="form-row">
+              <input
+                type="number"
+                id="taskMinutes"
+                placeholder="Minutes"
+                min="1"
+                onkeydown="if(event.key==='Enter') addTask()"
+              />
+              <label class="repeat-label">
+                <input type="checkbox" id="taskRepeatable" />
+                Repeatable
+              </label>
+            </div>
+            <button class="action-btn btn-dark" onclick="addTask()">+ Add Task</button>
           </div>
-          <button class="action-btn btn-dark" onclick="addTask()">+ Add Task</button>
-        </div>
+        </details>
 
-        <p class="section-label">Batch Import</p>
-        <div class="batch-area">
-          <textarea
-            id="batchInput"
-            placeholder="Task name, minutes&#10;Read emails, 15&#10;Deep work, 45&#10;Exercise, 30"
-          ></textarea>
-          <button class="action-btn btn-secondary" onclick="batchImport()">Import All</button>
-        </div>
+        <details class="collapsible">
+          <summary class="section-label">Batch Import</summary>
+          <div class="batch-area">
+            <textarea
+              id="batchInput"
+              placeholder="Task name, minutes&#10;Read emails, 15&#10;Deep work, 45&#10;Exercise, 30"
+            ></textarea>
+            <button class="action-btn btn-secondary" onclick="batchImport()">Import All</button>
+          </div>
+        </details>
 
         <p class="section-label">Task List</p>
         <div id="taskListView" class="task-list-display"></div>
