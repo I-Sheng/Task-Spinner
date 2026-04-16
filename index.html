@@ -290,6 +290,51 @@
         width: 100%;
       }
 
+      /* Complete modal */
+      #complete-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+      }
+      #complete-modal.visible { display: flex; }
+      .modal-box {
+        background: white;
+        border-radius: 20px;
+        padding: 36px 40px;
+        text-align: center;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+        max-width: 320px;
+        width: 90%;
+      }
+      .modal-box .modal-icon { font-size: 2.8rem; margin-bottom: 12px; }
+      .modal-box h3 {
+        margin: 0 0 6px;
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--dark);
+      }
+      .modal-box p {
+        margin: 0 0 24px;
+        color: #64748b;
+        font-size: 0.9rem;
+      }
+      .modal-box button {
+        padding: 12px 40px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+      .modal-box button:hover { opacity: 0.85; }
+
       /* Right Column Wheel */
       .wheel-box {
         flex: 1.5;
@@ -505,6 +550,15 @@
       </div>
     </div>
 
+    <div id="complete-modal">
+      <div class="modal-box">
+        <div class="modal-icon">🎉</div>
+        <h3>Task Complete!</h3>
+        <p id="modal-task-name"></p>
+        <button onclick="dismissModal()">OK</button>
+      </div>
+    </div>
+
     <script>
       const canvas = document.getElementById("wheel");
       const ctx = canvas.getContext("2d");
@@ -532,6 +586,16 @@
           currentAudio.pause();
           currentAudio.currentTime = 0;
         }
+      }
+
+      function showCompleteModal(taskName) {
+        document.getElementById("modal-task-name").textContent = taskName;
+        document.getElementById("complete-modal").classList.add("visible");
+      }
+
+      function dismissModal() {
+        document.getElementById("complete-modal").classList.remove("visible");
+        stopAudio();
       }
 
       function stopTimer() {
@@ -713,8 +777,7 @@
             if (currentActiveTask.repeatable)
               document.getElementById("repeatBtn").style.display = "block";
 
-            alert("Task Complete!");
-            stopAudio(); // stop music after user clicks OK
+            showCompleteModal(currentActiveTask.name);
             return;
           }
           const pct = (remaining / timerTotal) * 100;
