@@ -32,6 +32,7 @@ export default function Home() {
   const canvasRef = useRef(null);
   const currentAudioRef = useRef(null);
   const customAudioBlobRef = useRef(null);
+  const alarmPendingRef = useRef(false);
   const startAngleRef = useRef(0);
   const arcRef = useRef(0);
   const countdownIntervalRef = useRef(null);
@@ -79,10 +80,19 @@ export default function Home() {
   }, []);
 
   const stopAudio = useCallback(() => {
+    alarmPendingRef.current = false;
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
     }
+  }, []);
+
+  const triggerAlarm = useCallback(() => {
+    if (!customAudioBlobRef.current) return;
+    currentAudioRef.current = new Audio(customAudioBlobRef.current);
+    currentAudioRef.current.play().catch(() => {
+      // autoplay blocked; visibilitychange will retry
+    });
   }, []);
 
   const stopTimer = useCallback(() => {
@@ -109,10 +119,8 @@ export default function Home() {
         setTimerProgress(0);
         setShowStopBtn(false);
 
-        if (customAudioBlobRef.current) {
-          currentAudioRef.current = new Audio(customAudioBlobRef.current);
-          currentAudioRef.current.play();
-        }
+        alarmPendingRef.current = true;
+        triggerAlarm();
         if (currentActiveTaskRef.current?.repeatable) setShowRepeat(true);
         setModalTaskName(currentActiveTaskRef.current?.name ?? '');
         setShowModal(true);
@@ -128,7 +136,7 @@ export default function Home() {
 
     tick();
     countdownIntervalRef.current = setInterval(tick, 500);
-  }, []);
+  }, [triggerAlarm]);
 
   const handleAddTask = useCallback((name, time, repeatable) => {
     const newTasks = [...tasksRef.current, { name, time, repeatable }];
@@ -206,6 +214,15 @@ export default function Home() {
     const file = e.target.files[0];
     if (file) customAudioBlobRef.current = URL.createObjectURL(file);
   }, []);
+
+  // Retry alarm playback when tab becomes visible (bypasses autoplay block)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && alarmPendingRef.current) triggerAlarm();
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [triggerAlarm]);
 
   // Load saved tasks on mount
   useEffect(() => {
