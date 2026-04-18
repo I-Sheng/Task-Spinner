@@ -32,6 +32,8 @@ export default function Home() {
   const canvasRef = useRef(null);
   const currentAudioRef = useRef(null);
   const customAudioBlobRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const audioBufferRef = useRef(null);
   const alarmPendingRef = useRef(false);
   const startAngleRef = useRef(0);
   const arcRef = useRef(0);
@@ -82,16 +84,25 @@ export default function Home() {
   const stopAudio = useCallback(() => {
     alarmPendingRef.current = false;
     if (currentAudioRef.current) {
-      currentAudioRef.current.pause();
-      currentAudioRef.current.currentTime = 0;
+      try { currentAudioRef.current.stop(); } catch {}
+      currentAudioRef.current = null;
     }
   }, []);
 
   const triggerAlarm = useCallback(() => {
-    if (!customAudioBlobRef.current) return;
-    currentAudioRef.current = new Audio(customAudioBlobRef.current);
-    currentAudioRef.current.play().catch(() => {
-      // autoplay blocked; visibilitychange will retry
+    if (!audioBufferRef.current || !audioContextRef.current) return;
+    alarmPendingRef.current = false;
+    const ctx = audioContextRef.current;
+    const resume = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
+    resume.then(() => {
+      if (currentAudioRef.current) {
+        try { currentAudioRef.current.stop(); } catch {}
+      }
+      const source = ctx.createBufferSource();
+      source.buffer = audioBufferRef.current;
+      source.connect(ctx.destination);
+      source.start(0);
+      currentAudioRef.current = source;
     });
   }, []);
 
@@ -164,6 +175,7 @@ export default function Home() {
 
   const spinWheel = useCallback(() => {
     if (tasksRef.current.length === 0) return;
+    if (audioContextRef.current?.state === 'suspended') audioContextRef.current.resume();
     stopAudio();
     clearInterval(countdownIntervalRef.current);
     setShowRepeat(false);
@@ -212,17 +224,17 @@ export default function Home() {
 
   const loadCustomAudio = useCallback((e) => {
     const file = e.target.files[0];
-    if (file) customAudioBlobRef.current = URL.createObjectURL(file);
+    if (!file) return;
+    customAudioBlobRef.current = URL.createObjectURL(file);
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    file.arrayBuffer().then((buf) =>
+      audioContextRef.current.decodeAudioData(buf).then((decoded) => {
+        audioBufferRef.current = decoded;
+      })
+    );
   }, []);
-
-  // Retry alarm playback when tab becomes visible (bypasses autoplay block)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && alarmPendingRef.current) triggerAlarm();
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [triggerAlarm]);
 
   // Load saved tasks on mount
   useEffect(() => {
