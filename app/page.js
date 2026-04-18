@@ -34,6 +34,7 @@ export default function Home() {
   const customAudioBlobRef = useRef(null);
   const audioContextRef = useRef(null);
   const audioBufferRef = useRef(null);
+  const silentSourceRef = useRef(null);
   const alarmPendingRef = useRef(false);
   const startAngleRef = useRef(0);
   const arcRef = useRef(0);
@@ -175,7 +176,11 @@ export default function Home() {
 
   const spinWheel = useCallback(() => {
     if (tasksRef.current.length === 0) return;
-    if (audioContextRef.current?.state === 'suspended') audioContextRef.current.resume();
+    if (audioContextRef.current) {
+      const ctx = audioContextRef.current;
+      const ready = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
+      ready.then(() => startSilentKeepAlive(ctx));
+    }
     stopAudio();
     clearInterval(countdownIntervalRef.current);
     setShowRepeat(false);
@@ -207,7 +212,7 @@ export default function Home() {
       setTimeout(rotate, 30);
     };
     rotate();
-  }, [stopAudio, startTimer, drawWheel]);
+  }, [stopAudio, startTimer, drawWheel, startSilentKeepAlive]);
 
   const repeatCurrentTask = useCallback(() => {
     if (currentActiveTaskRef.current) {
@@ -222,6 +227,17 @@ export default function Home() {
     stopAudio();
   }, [stopAudio]);
 
+  const startSilentKeepAlive = useCallback((ctx) => {
+    if (silentSourceRef.current) return;
+    const silent = ctx.createBuffer(1, 1, ctx.sampleRate);
+    const source = ctx.createBufferSource();
+    source.buffer = silent;
+    source.loop = true;
+    source.connect(ctx.destination);
+    source.start(0);
+    silentSourceRef.current = source;
+  }, []);
+
   const loadCustomAudio = useCallback((e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -229,12 +245,15 @@ export default function Home() {
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
     }
+    const ctx = audioContextRef.current;
+    const ready = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
+    ready.then(() => startSilentKeepAlive(ctx));
     file.arrayBuffer().then((buf) =>
-      audioContextRef.current.decodeAudioData(buf).then((decoded) => {
+      ctx.decodeAudioData(buf).then((decoded) => {
         audioBufferRef.current = decoded;
       })
     );
-  }, []);
+  }, [startSilentKeepAlive]);
 
   // Load saved tasks on mount
   useEffect(() => {
