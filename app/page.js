@@ -255,6 +255,17 @@ export default function Home() {
     );
   }, [startSilentKeepAlive]);
 
+  // Load default alarm sound on mount
+  useEffect(() => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    audioContextRef.current = ctx;
+    fetch('/Everytime_We_Touch.mp3')
+      .then((res) => res.arrayBuffer())
+      .then((buf) => ctx.decodeAudioData(buf))
+      .then((decoded) => { audioBufferRef.current = decoded; })
+      .catch(() => {});
+  }, []);
+
   // Load saved tasks on mount
   useEffect(() => {
     const saved = localStorage.getItem('savedTasks');
