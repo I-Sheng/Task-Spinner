@@ -35,6 +35,7 @@ export default function Home() {
   const audioContextRef = useRef(null);
   const audioBufferRef = useRef(null);
   const alarmPendingRef = useRef(false);
+  const silentOscRef = useRef(null);
   const startAngleRef = useRef(0);
   const arcRef = useRef(0);
   const countdownIntervalRef = useRef(null);
@@ -91,10 +92,10 @@ export default function Home() {
 
   const triggerAlarm = useCallback(() => {
     if (!audioBufferRef.current || !audioContextRef.current) return;
-    alarmPendingRef.current = false;
     const ctx = audioContextRef.current;
     const resume = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
     resume.then(() => {
+      alarmPendingRef.current = false;
       if (currentAudioRef.current) {
         try { currentAudioRef.current.stop(); } catch {}
       }
@@ -132,6 +133,11 @@ export default function Home() {
 
         alarmPendingRef.current = true;
         triggerAlarm();
+        if (document.hidden && Notification.permission === 'granted') {
+          new Notification('Task Complete!', {
+            body: currentActiveTaskRef.current?.name ?? 'Your task timer has finished.',
+          });
+        }
         if (currentActiveTaskRef.current?.repeatable) setShowRepeat(true);
         setModalTaskName(currentActiveTaskRef.current?.name ?? '');
         setShowModal(true);
@@ -175,7 +181,19 @@ export default function Home() {
 
   const spinWheel = useCallback(() => {
     if (tasksRef.current.length === 0) return;
-    if (audioContextRef.current?.state === 'suspended') audioContextRef.current.resume();
+    const actx = audioContextRef.current;
+    if (actx?.state === 'suspended') actx.resume();
+    // Keep AudioContext alive in background by holding an active (silent) audio node
+    if (actx && !silentOscRef.current) {
+      const osc = actx.createOscillator();
+      const gain = actx.createGain();
+      gain.gain.value = 0;
+      osc.connect(gain);
+      gain.connect(actx.destination);
+      osc.start();
+      silentOscRef.current = osc;
+    }
+    if (Notification.permission === 'default') Notification.requestPermission();
     stopAudio();
     clearInterval(countdownIntervalRef.current);
     setShowRepeat(false);
@@ -246,6 +264,15 @@ export default function Home() {
       .then((decoded) => { audioBufferRef.current = decoded; })
       .catch(() => {});
   }, []);
+
+  // Play pending alarm the moment the user returns to the tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (!document.hidden && alarmPendingRef.current) triggerAlarm();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [triggerAlarm]);
 
   // Load saved tasks on mount
   useEffect(() => {
