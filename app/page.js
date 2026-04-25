@@ -28,6 +28,7 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [modalTaskName, setModalTaskName] = useState('');
   const [showStopBtn, setShowStopBtn] = useState(false);
+  const [spinning, setSpinning] = useState(false);
 
   const canvasRef = useRef(null);
   const currentAudioRef = useRef(null);
@@ -180,7 +181,7 @@ export default function Home() {
   }, [drawWheel]);
 
   const spinWheel = useCallback(() => {
-    if (tasksRef.current.length === 0) return;
+    if (tasksRef.current.length === 0 || spinning) return;
     const actx = audioContextRef.current;
     if (actx?.state === 'suspended') actx.resume();
     // Keep AudioContext alive in background by holding an active (silent) audio node
@@ -198,6 +199,7 @@ export default function Home() {
     clearInterval(countdownIntervalRef.current);
     setShowRepeat(false);
     setShowStopBtn(false);
+    setSpinning(true);
 
     const spinAngleStart = Math.random() * 10 + 10;
     let spinTime = 0;
@@ -213,6 +215,7 @@ export default function Home() {
           ) % tasksRef.current.length;
         currentActiveTaskRef.current = tasksRef.current[index];
         setCurrentTaskName(currentActiveTaskRef.current.name);
+        setSpinning(false);
         startTimer(currentActiveTaskRef.current.time * 60);
         return;
       }
@@ -225,7 +228,7 @@ export default function Home() {
       setTimeout(rotate, 30);
     };
     rotate();
-  }, [stopAudio, startTimer, drawWheel]);
+  }, [stopAudio, startTimer, drawWheel, spinning]);
 
   const repeatCurrentTask = useCallback(() => {
     if (currentActiveTaskRef.current) {
@@ -327,7 +330,11 @@ export default function Home() {
           onStop={stopTimer}
         />
         <div className="wheel-actions">
-          <button className="spin-btn" onClick={spinWheel}>
+          <button
+            className="spin-btn"
+            onClick={spinWheel}
+            disabled={spinning || tasks.length === 0}
+          >
             SPIN THE WHEEL
           </button>
         </div>
