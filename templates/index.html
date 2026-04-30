@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Task Orbit | Spin Your Productivity</title>
+    <meta name="title" content="Task Orbit | Spin Your Productivity" />
+    <meta
+      name="description"
+      content="A powerful task management wheel with integrated timers and batch import."
+    />
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎡</text></svg>"
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Task Orbit" />
+    <meta
+      property="og:description"
+      content="Decide your next task with a spin."
+    />
+
+    <style>
+      :root {
+        --primary: #6366f1;
+        --secondary: #f43f5e;
+        --dark: #1e293b;
+        --light: #f8fafc;
+        --border: #e2e8f0;
+        --success: #10b981;
+      }
+      * { box-sizing: border-box; }
+      body {
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        background: #f1f5f9;
+        display: flex;
+        justify-content: center;
+        padding: 24px 16px;
+        color: var(--dark);
+        min-height: 100vh;
+      }
+      .app-container {
+        display: flex;
+        gap: 30px;
+        background: white;
+        padding: 30px;
+        border-radius: 24px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+        max-width: 1100px;
+        width: 100%;
+        align-items: flex-start;
+      }
+
+      /* Branding */
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .brand-icon {
+        width: 32px;
+        height: 32px;
+        background: conic-gradient(#ff6b6b, #4ecdc4, #ffe66d, #1a535c);
+        border-radius: 50%;
+        border: 2px solid var(--dark);
+        flex-shrink: 0;
+      }
+      .brand h2 {
+        margin: 0;
+        color: var(--dark);
+        font-size: 1.4rem;
+        font-weight: 800;
+      }
+
+      /* Left Column Controls */
+      .controls {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        border-right: 1px solid var(--border);
+        padding-right: 30px;
+        min-width: 300px;
+        max-width: 360px;
+      }
+
+      /* Section label */
+      .section-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        margin-top: 16px;
+      }
+      .section-label:first-of-type { margin-top: 0; }
+
+      /* Add-task form */
+      .add-form {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+      .add-form input[type="text"],
+      .add-form input[type="number"] {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        font-size: 0.9rem;
+        background: var(--light);
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .add-form input:focus {
+        border-color: var(--primary);
+      }
+      .add-form .form-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .add-form .form-row input[type="number"] {
+        flex: 1;
+      }
+      .repeat-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.82rem;
+        color: #64748b;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+      .repeat-label input[type="checkbox"] {
+        width: 15px;
+        height: 15px;
+        cursor: pointer;
+        accent-color: var(--primary);
+        flex-shrink: 0;
+      }
+
+      /* Collapsible sections */
+      .collapsible {
+        margin-bottom: 4px;
+      }
+      .collapsible > summary.section-label {
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+        margin-bottom: 0;
+        padding: 4px 0;
+      }
+      .collapsible > summary.section-label::after {
+        content: "▸";
+        font-size: 0.75rem;
+        color: #94a3b8;
+        transition: transform 0.2s;
+      }
+      .collapsible[open] > summary.section-label::after {
+        transform: rotate(90deg);
+      }
+      .collapsible > summary::-webkit-details-marker { display: none; }
+      .collapsible > *:not(summary) {
+        margin-top: 8px;
+      }
+
+      /* Batch import */
+      .batch-area {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 4px;
+      }
+      .batch-area textarea {
+        width: 100%;
+        height: 72px;
+        padding: 8px 10px;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-family: inherit;
+        background: var(--light);
+        outline: none;
+        resize: vertical;
+        transition: border-color 0.15s;
+        color: var(--dark);
+      }
+      .batch-area textarea:focus { border-color: var(--primary); }
+      .batch-area textarea::placeholder { color: #94a3b8; }
+
+      /* Task List */
+      .task-list-display {
+        max-height: 280px;
+        overflow-y: auto;
+        border-radius: 12px;
+        padding: 2px;
+        margin-bottom: 4px;
+      }
+      .task-list-display:empty::after {
+        content: "No tasks yet";
+        display: block;
+        text-align: center;
+        color: #cbd5e1;
+        font-size: 0.82rem;
+        padding: 16px 0;
+      }
+      .list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 5px;
+        font-size: 0.85rem;
+        border: 1px solid #eee;
+        border-left-width: 5px;
+        transition: background 0.1s;
+      }
+      .list-item:hover { background: #f8fafc; }
+      .del-x {
+        color: #cbd5e1;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-size: 1.1rem;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: color 0.15s;
+        flex-shrink: 0;
+      }
+      .del-x:hover { color: var(--secondary); }
+
+      .action-btn {
+        width: 100%;
+        padding: 12px 14px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.9rem;
+        transition: opacity 0.15s, transform 0.1s;
+      }
+      .action-btn:hover { opacity: 0.88; }
+      .action-btn:active { transform: scale(0.98); }
+      .btn-dark {
+        background: var(--dark);
+        color: white;
+      }
+      .btn-secondary {
+        background: var(--primary);
+        color: white;
+      }
+      .btn-repeat {
+        background: var(--success);
+        color: white;
+        display: none;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+      }
+
+      /* Alarm upload */
+      .settings-bar {
+        margin-top: 4px;
+        padding: 12px;
+        background: var(--light);
+        border-radius: 12px;
+        font-size: 0.8rem;
+        border: 1px dashed #cbd5e1;
+      }
+      .settings-bar label { font-weight: 600; }
+      .settings-bar input[type="file"] {
+        margin-top: 6px;
+        font-size: 0.75rem;
+        display: block;
+        width: 100%;
+      }
+
+      /* Complete modal */
+      #complete-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+      }
+      #complete-modal.visible { display: flex; }
+      .modal-box {
+        background: white;
+        border-radius: 20px;
+        padding: 36px 40px;
+        text-align: center;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+        max-width: 320px;
+        width: 90%;
+      }
+      .modal-box .modal-icon { font-size: 2.8rem; margin-bottom: 12px; }
+      .modal-box h3 {
+        margin: 0 0 6px;
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--dark);
+      }
+      .modal-box p {
+        margin: 0 0 24px;
+        color: #64748b;
+        font-size: 0.9rem;
+      }
+      .modal-box button {
+        padding: 12px 40px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+      .modal-box button:hover { opacity: 0.85; }
+
+      /* Right Column Wheel */
+      .wheel-box {
+        flex: 1.5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+      }
+      #current-task-name {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary);
+        min-height: 1.8em;
+        margin-bottom: 12px;
+        text-align: center;
+        word-break: break-word;
+      }
+      #wheel-wrapper {
+        position: relative;
+        display: inline-block;
+      }
+      .pointer {
+        position: absolute;
+        top: -14px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 14px solid transparent;
+        border-right: 14px solid transparent;
+        border-top: 28px solid var(--dark);
+        z-index: 10;
+      }
+      canvas {
+        border: 8px solid var(--dark);
+        border-radius: 50%;
+        background: white;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        display: block;
+        width: 400px;
+        height: 400px;
+        max-width: 100%;
+      }
+
+      /* Timer block */
+      .timer-block {
+        margin-top: 20px;
+        width: 100%;
+        max-width: 360px;
+        text-align: center;
+      }
+      #timer-display {
+        font-size: 5rem;
+        font-weight: 900;
+        color: var(--dark);
+        margin: 0;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -2px;
+        line-height: 1;
+      }
+      /* Progress bar */
+      #timer-bar-wrap {
+        height: 6px;
+        background: var(--border);
+        border-radius: 99px;
+        margin: 10px 0 0;
+        overflow: hidden;
+      }
+      #timer-bar {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 99px;
+        width: 100%;
+        transition: width 0.5s linear, background 0.3s;
+      }
+
+      /* Buttons row at bottom of wheel-box */
+      .wheel-actions {
+        margin-top: 18px;
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        max-width: 360px;
+      }
+      #spin-btn {
+        flex: 1;
+        padding: 16px;
+        background: var(--secondary);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 1.1rem;
+        font-family: inherit;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(244, 63, 94, 0.25);
+        transition: transform 0.1s, opacity 0.15s;
+      }
+      #spin-btn:hover { opacity: 0.9; }
+      #spin-btn:active { transform: scale(0.96); }
+      #spin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      #stop-btn {
+        padding: 16px 20px;
+        background: white;
+        color: var(--dark);
+        border: 2px solid var(--border);
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        display: none;
+        transition: border-color 0.15s, color 0.15s;
+      }
+      #stop-btn:hover { border-color: var(--secondary); color: var(--secondary); }
+
+      /* Responsive */
+      @media (max-width: 960px) {
+        body { padding: 20px 14px; }
+        .app-container { gap: 22px; padding: 24px; border-radius: 20px; }
+        .controls { padding-right: 22px; min-width: 260px; max-width: 320px; }
+        canvas { width: 340px; height: 340px; }
+        #timer-display { font-size: 4.2rem; }
+        #current-task-name { font-size: 1.3rem; }
+      }
+      @media (max-width: 720px) {
+        body { padding: 16px 12px; }
+        .app-container { flex-direction: column; padding: 20px 16px; gap: 20px; border-radius: 18px; }
+        .controls {
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+          padding-right: 0;
+          padding-bottom: 20px;
+          max-width: 100%;
+          min-width: unset;
+          width: 100%;
+        }
+        .wheel-box { width: 100%; }
+        canvas { width: 320px; height: 320px; }
+        #timer-display { font-size: 3.8rem; }
+        .timer-block, .wheel-actions { max-width: 100%; }
+        .add-form input[type="text"],
+        .add-form input[type="number"] { padding: 12px 14px; font-size: 1rem; }
+        .action-btn { padding: 14px 16px; }
+        #spin-btn { padding: 18px; font-size: 1.15rem; }
+        .del-x { font-size: 1.4rem; padding: 6px 10px; }
+      }
+      @media (max-width: 480px) {
+        body { padding: 12px 8px; }
+        .app-container { padding: 16px 14px; gap: 16px; border-radius: 16px; }
+        .brand h2 { font-size: 1.25rem; }
+        canvas { width: min(85vw, 300px); height: min(85vw, 300px); }
+        #timer-display { font-size: clamp(2.8rem, 14vw, 3.6rem); letter-spacing: -1px; }
+        #current-task-name { font-size: 1.15rem; }
+        .modal-box { padding: 28px 24px; }
+        .modal-box h3 { font-size: 1.2rem; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+        #spin-btn:active, .action-btn:active { transform: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="controls">
+        <div class="brand">
+          <div class="brand-icon"></div>
+          <h2>Task Orbit</h2>
+        </div>
+
+        <details class="collapsible" open>
+          <summary class="section-label">Add Task</summary>
+          <div class="add-form">
+            <input
+              type="text"
+              id="taskName"
+              placeholder="Task name"
+              onkeydown="if(event.key==='Enter') addTask()"
+            />
+            <div class="form-row">
+              <input
+                type="number"
+                id="taskMinutes"
+                placeholder="Minutes"
+                min="1"
+                onkeydown="if(event.key==='Enter') addTask()"
+              />
+              <label class="repeat-label">
+                <input type="checkbox" id="taskRepeatable" />
+                Repeatable
+              </label>
+            </div>
+            <button class="action-btn btn-dark" onclick="addTask()">+ Add Task</button>
+          </div>
+        </details>
+
+        <details class="collapsible">
+          <summary class="section-label">Batch Import</summary>
+          <div class="batch-area">
+            <textarea
+              id="batchInput"
+              placeholder="Task name, minutes&#10;Read emails, 15&#10;Deep work, 45&#10;Exercise, 30"
+            ></textarea>
+            <button class="action-btn btn-secondary" onclick="batchImport()">Import All</button>
+          </div>
+        </details>
+
+        <p class="section-label">Task List</p>
+        <div id="taskListView" class="task-list-display"></div>
+
+        <button
+          id="repeatBtn"
+          class="action-btn btn-repeat"
+          onclick="repeatCurrentTask()"
+          style="margin-bottom: 12px;"
+        >
+          Repeat Same Task
+        </button>
+
+        <div class="settings-bar">
+          <label>Custom Alarm Sound</label>
+          <input
+            type="file"
+            id="audioUpload"
+            accept="audio/*"
+            onchange="loadCustomAudio(event)"
+          />
+        </div>
+      </div>
+
+      <div class="wheel-box">
+        <div id="current-task-name">Welcome</div>
+        <div id="wheel-wrapper">
+          <div class="pointer"></div>
+          <canvas id="wheel" width="400" height="400"></canvas>
+        </div>
+        <div class="timer-block">
+          <div id="timer-display">00:00</div>
+          <div id="timer-bar-wrap"><div id="timer-bar"></div></div>
+        </div>
+        <div class="wheel-actions">
+          <button id="spin-btn" onclick="spinWheel()">SPIN THE WHEEL</button>
+          <button id="stop-btn" onclick="stopTimer()">STOP</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="complete-modal" onclick="dismissModal()">
+      <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-icon">🎉</div>
+        <h3>Task Complete!</h3>
+        <p id="modal-task-name"></p>
+        <button onclick="dismissModal()">OK</button>
+      </div>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("wheel");
+      const ctx = canvas.getContext("2d");
+      const colors = [
+        "#6366f1","#f43f5e","#10b981","#f59e0b","#8b5cf6",
+        "#ec4899","#06b6d4","#2dd4bf","#fbbf24","#a855f7",
+      ];
+
+      let tasks = [];
+      let currentActiveTask = null;
+      let currentAudio = null;
+      let customAudioBlob = null;
+      let startAngle = 0;
+      let arc = 0;
+      let countdownInterval;
+      let timerTotal = 0;
+      let isSpinning = false;
+
+      // Backend-driven alarm state
+      let currentTimerId = null;
+      let eventSource = null;
+      let alarmFired = false;
+      let alarmPending = false;
+
+      const DEFAULT_ALARM_URL = '/static/audio/Everytime_We_Touch.mp3';
+
+      // Request notification permission on first load
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+
+      // When user switches back to the tab, play deferred alarm
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && alarmPending) {
+          alarmPending = false;
+          _playAudio();
+        }
+      });
+
+      function loadCustomAudio(event) {
+        const file = event.target.files[0];
+        if (file) customAudioBlob = URL.createObjectURL(file);
+      }
+
+      function _playAudio() {
+        const url = customAudioBlob || DEFAULT_ALARM_URL;
+        currentAudio = new Audio(url);
+        currentAudio.play().catch(() => {
+          // Still blocked — defer again
+          alarmPending = true;
+        });
+      }
+
+      function triggerAlarm() {
+        _playAudio();
+
+        if ('Notification' in window && Notification.permission === 'granted' && currentActiveTask) {
+          new Notification('Task Complete!', {
+            body: currentActiveTask.name + ' is done!',
+            icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎉</text></svg>',
+          });
+        }
+      }
+
+      function stopAudio() {
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+        alarmPending = false;
+      }
+
+      function showCompleteModal(taskName) {
+        document.getElementById("modal-task-name").textContent = taskName;
+        document.getElementById("complete-modal").classList.add("visible");
+      }
+
+      function dismissModal() {
+        document.getElementById("complete-modal").classList.remove("visible");
+        stopAudio();
+      }
+
+      function _closeEventSource() {
+        if (eventSource) {
+          eventSource.close();
+          eventSource = null;
+        }
+      }
+
+      // Central handler called by either the SSE event or the client-side tick
+      function handleTimerEnd() {
+        if (alarmFired) return;
+        alarmFired = true;
+
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+        document.getElementById("timer-display").textContent = "00:00";
+        document.getElementById("timer-bar").style.width = "0%";
+        document.getElementById("timer-bar").style.background = "var(--secondary)";
+        document.getElementById("stop-btn").style.display = "none";
+
+        _closeEventSource();
+        currentTimerId = null;
+
+        if (currentActiveTask && currentActiveTask.repeatable)
+          document.getElementById("repeatBtn").style.display = "block";
+
+        triggerAlarm();
+
+        if (currentActiveTask)
+          showCompleteModal(currentActiveTask.name);
+      }
+
+      function stopTimer() {
+        // Prevent any pending alarm from firing
+        alarmFired = true;
+
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+        document.getElementById("timer-display").textContent = "00:00";
+        document.getElementById("timer-bar").style.width = "100%";
+        document.getElementById("timer-bar").style.background = "var(--primary)";
+        document.getElementById("stop-btn").style.display = "none";
+        stopAudio();
+
+        if (currentTimerId) {
+          fetch('/api/timer/stop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ timer_id: currentTimerId }),
+          }).catch(() => {});
+          currentTimerId = null;
+        }
+        _closeEventSource();
+      }
+
+      function startTimer(seconds) {
+        stopTimer();           // Cancel any running timer first
+        alarmFired = false;    // Reset for new timer
+        timerTotal = seconds;
+
+        const display = document.getElementById("timer-display");
+        const bar = document.getElementById("timer-bar");
+        const endTime = Date.now() + seconds * 1000;
+
+        bar.style.background = "var(--primary)";
+        document.getElementById("stop-btn").style.display = "block";
+
+        // Register server-side timer and connect SSE
+        fetch('/api/timer/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ duration: seconds }),
+        })
+          .then(r => r.json())
+          .then(data => {
+            currentTimerId = data.timer_id;
+            eventSource = new EventSource('/api/timer/events/' + currentTimerId);
+
+            // Server fires this exactly when the timer expires
+            eventSource.addEventListener('alarm', () => {
+              handleTimerEnd();
+            });
+
+            eventSource.addEventListener('error', () => {
+              // SSE dropped — client-side tick is the fallback
+              _closeEventSource();
+            });
+          })
+          .catch(() => {
+            // Server unreachable — client tick handles everything
+          });
+
+        // Client-side tick: updates the visual countdown
+        // Also acts as fallback alarm if SSE fails
+        function tick() {
+          const remaining = Math.ceil((endTime - Date.now()) / 1000);
+          if (remaining <= 0) {
+            // Client tick reached zero — fire if SSE hasn't already
+            handleTimerEnd();
+            return;
+          }
+          const pct = (remaining / timerTotal) * 100;
+          bar.style.width = pct + "%";
+          if (pct < 20) bar.style.background = "var(--secondary)";
+          else if (pct < 50) bar.style.background = "var(--primary)";
+
+          const m = Math.floor(remaining / 60);
+          const s = remaining % 60;
+          display.textContent =
+            m.toString().padStart(2, "0") + ":" + s.toString().padStart(2, "0");
+        }
+
+        tick();
+        countdownInterval = setInterval(tick, 500);
+      }
+
+      function addTask() {
+        const nameEl = document.getElementById("taskName");
+        const minEl = document.getElementById("taskMinutes");
+        const repEl = document.getElementById("taskRepeatable");
+
+        const name = nameEl.value.trim();
+        const time = parseInt(minEl.value);
+
+        if (!name) { nameEl.focus(); return; }
+        if (!time || time < 1) { minEl.focus(); return; }
+
+        tasks.push({ name, time, repeatable: repEl.checked });
+        nameEl.value = "";
+        minEl.value = "";
+        repEl.checked = false;
+        nameEl.focus();
+
+        renderTaskList();
+        drawWheel();
+        saveTasks();
+      }
+
+      function batchImport() {
+        const raw = document.getElementById("batchInput").value.trim();
+        if (!raw) return;
+        let added = 0;
+        raw.split("\n").forEach(line => {
+          const parts = line.split(",");
+          if (parts.length < 2) return;
+          const name = parts[0].trim();
+          const time = parseInt(parts[1].trim());
+          if (!name || !time || time < 1) return;
+          const repeatable = parts[2] ? parts[2].trim().toLowerCase() === "true" : false;
+          tasks.push({ name, time, repeatable });
+          added++;
+        });
+        if (added > 0) {
+          document.getElementById("batchInput").value = "";
+          renderTaskList();
+          drawWheel();
+          saveTasks();
+        }
+      }
+
+      function saveTasks() {
+        localStorage.setItem("savedTasks", JSON.stringify(tasks));
+      }
+
+      function renderTaskList() {
+        const container = document.getElementById("taskListView");
+        container.innerHTML = tasks
+          .map((t, i) => {
+            const itemColor = colors[i % colors.length];
+            const badge = t.repeatable
+              ? `<span style="font-size:0.7rem;color:#64748b;margin-left:4px">↺</span>` : "";
+            return `<div class="list-item" style="border-left-color:${itemColor}">
+              <span><strong>${t.name}</strong>${badge} <span style="color:#94a3b8">${t.time}m</span></span>
+              <button class="del-x" onclick="removeTask(${i})">✕</button>
+            </div>`;
+          })
+          .join("");
+      }
+
+      function removeTask(index) {
+        tasks.splice(index, 1);
+        renderTaskList();
+        drawWheel();
+        saveTasks();
+      }
+
+      function drawWheel() {
+        if (tasks.length === 0) {
+          ctx.clearRect(0, 0, 400, 400);
+          return;
+        }
+        arc = Math.PI / (tasks.length / 2);
+        ctx.clearRect(0, 0, 400, 400);
+        tasks.forEach((task, i) => {
+          const angle = startAngle + i * arc;
+          ctx.fillStyle = colors[i % colors.length];
+          ctx.beginPath();
+          ctx.moveTo(200, 200);
+          ctx.arc(200, 200, 190, angle, angle + arc, false);
+          ctx.fill();
+          ctx.save();
+          ctx.fillStyle = "white";
+          ctx.translate(
+            200 + Math.cos(angle + arc / 2) * 135,
+            200 + Math.sin(angle + arc / 2) * 135
+          );
+          ctx.rotate(angle + arc / 2 + Math.PI / 2);
+          ctx.font = "bold 11px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(task.name.substring(0, 14), 0, 0);
+          ctx.restore();
+        });
+      }
+
+      function spinWheel() {
+        if (tasks.length === 0 || isSpinning) return;
+        stopTimer();
+        document.getElementById("repeatBtn").style.display = "none";
+        isSpinning = true;
+        document.getElementById("spin-btn").disabled = true;
+
+        let spinAngleStart = Math.random() * 10 + 10;
+        let spinTime = 0;
+        let spinTimeTotal = Math.random() * 3 + 3000;
+
+        const rotate = () => {
+          spinTime += 30;
+          if (spinTime >= spinTimeTotal) {
+            const degrees = (startAngle * 180) / Math.PI + 90;
+            const index =
+              Math.floor((360 - (degrees % 360)) / ((arc * 180) / Math.PI)) %
+              tasks.length;
+            currentActiveTask = tasks[index];
+            document.getElementById("current-task-name").innerText =
+              currentActiveTask.name;
+            isSpinning = false;
+            document.getElementById("spin-btn").disabled = false;
+            startTimer(currentActiveTask.time * 60);
+            return;
+          }
+          startAngle +=
+            ((spinAngleStart -
+              easeOut(spinTime, 0, spinAngleStart, spinTimeTotal)) *
+              Math.PI) /
+            180;
+          drawWheel();
+          setTimeout(rotate, 30);
+        };
+        rotate();
+      }
+
+      function repeatCurrentTask() {
+        if (currentActiveTask) {
+          stopAudio();
+          document.getElementById("repeatBtn").style.display = "none";
+          startTimer(currentActiveTask.time * 60);
+        }
+      }
+
+      function easeOut(t, b, c, d) {
+        const ts = (t /= d) * t;
+        const tc = ts * t;
+        return b + c * (tc + -3 * ts + 3 * t);
+      }
+
+      window.onload = () => {
+        const saved = localStorage.getItem("savedTasks");
+        if (saved) {
+          try {
+            tasks = JSON.parse(saved);
+            renderTaskList();
+            drawWheel();
+          } catch (e) {
+            localStorage.removeItem("savedTasks");
+          }
+        }
+        document.getElementById("taskName").focus();
+      };
+    </script>
+  </body>
+</html>
